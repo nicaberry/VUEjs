@@ -5,9 +5,23 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
 	<title>repl.it</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 	<link href="style.css" rel="stylesheet" type="text/css" />
-	<script src="vue.js">
-	</script>
+	<script src="vue.js"></script>
+  <style>
+    .slide-enter{
+      opacity: 0;
+    }
+    .slide-enter-active{
+      transition: opacity 0.5s;
+    }
+    .slider-leave-active{
+      transition: opacity 0.5s;
+    }
+    .slider-leave-to{
+      opacity: 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -20,9 +34,18 @@
         <hr>
         <h2>Hello, {{ name }}</h2>
         <h2>Your profit: {{ sum }}</h2>
-        <h2 v-show="showH2">{{ lolo }}</h2>
         <hr>
-        <button class="btn btn-success" v-on:click="addNumber">
+        <app-progress v-bind:max="maxNumbers" v-bind:val="numbers.length"></app-progress>
+        <hr>
+        <hr>
+        <app-progress v-bind:max="maxNumbers * 5" v-bind:val="sum"></app-progress>
+        <hr>
+        <h2>{{ lolo }}</h2>
+        <transition name="slide" class="alert alert-success">
+          <h2 v-show="showH2">{{ lolo }}</h2>
+        </transition>
+        <hr>
+        <button class="btn btn-success" v-on:click="addNumber" v-bind:disabled="done">
           add random number
         </button>
         <ul class="list-group">
@@ -31,6 +54,30 @@
       </div>
     </div>
     <script>
+      Vue.component('app-progress', {
+        props: {
+          max: Number,
+          val: Number
+        },
+        computed: {
+          width() {
+            let w = this.val / this.max * 100;
+            if (w > 100) {
+              w = 100;
+            } else if (w < 0) {
+              w = 0;
+            }
+            return {
+              width: w + '%'
+            }
+          }
+        },
+        template: `
+              <div class="progress">
+                <div class="progress-bar" v-bind:style="width"></div>
+              </div>
+        `
+      })
       let sample = new Vue({
         el: '.sample',
         data: {
@@ -38,11 +85,14 @@
           lolo: 'LOlo',
           showH2: false,
           numbers: [],
+          maxNumbers: 10,
         },
         methods: {
           addNumber() {
-            let rndm = Math.floor(Math.random() * 11) - 5;
-            this.numbers.push(rndm);
+            if (!this.done) {
+              let rndm = Math.floor(Math.random() * 11) - 5;
+              this.numbers.push(rndm);
+            }
           }
         },
         computed: {
@@ -57,6 +107,9 @@
           },
           btnText() {
             return this.showH2 ? 'hide' : 'show'
+          },
+          done() {
+            return this.numbers.length >= this.maxNumbers;
           }
         }
       });
